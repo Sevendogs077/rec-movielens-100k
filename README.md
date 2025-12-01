@@ -1,12 +1,16 @@
 # rec-movielens-100k
 
-Based on [MovieLens 100K Dataset](https://grouplens.org/datasets/movielens/100k/)
-
 ---
 ### Introduction
 
-This is my simple test of Recommender System. 
+This is my simple practice of Recommender System based on [MovieLens 100K Dataset](https://grouplens.org/datasets/movielens/100k/)
 
+---
+
+### To-Do List
+
+- [x] GMF (Generalized Matrix Factorization) 
+- [ ] To be continued...
 ---
 
 ### Requirements
