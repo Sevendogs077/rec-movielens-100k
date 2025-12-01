@@ -1,6 +1,9 @@
 import os
+import sys
+from tqdm import tqdm
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -22,6 +25,8 @@ def train(args):
     # Setup save_dir
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
+
+    print(f"Using Device: {args.device}")
 
     # Load dataset
     dataset = MovieLensDataset(args.data_path)
@@ -63,6 +68,10 @@ def train(args):
     # Initialize best_loss
     best_loss = float('inf')
 
+    # Initialize loss_history
+    train_loss_history = []
+    test_loss_history = []
+
     # Start training loop
     for epoch in range(args.num_epochs):
 
@@ -70,11 +79,21 @@ def train(args):
         net.train()
         total_train_loss = 0
 
-        for user_ids, item_ids, ratings in train_loader:
+        train_pbar = tqdm(
+            train_loader,
+            desc=f"Epoch {epoch + 1}/{args.num_epochs} [Train]",
+            leave=False,
+            ncols=80,
+            mininterval=1.0,
+            file = sys.stdout
+        )
+
+        for user_ids, item_ids, ratings in train_pbar:
             user_ids = user_ids.to(args.device)
             item_ids = item_ids.to(args.device)
             ratings = ratings.to(args.device)
 
+            # Zero gradient
             optimizer.zero_grad()
 
             # Forward
@@ -89,7 +108,10 @@ def train(args):
 
             total_train_loss += loss.item()
 
+            train_pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+
         avg_train_loss = total_train_loss / len(train_loader)
+        train_loss_history.append(avg_train_loss)
 
         # ============ Eval ============
         net.eval()
@@ -107,22 +129,38 @@ def train(args):
                 total_test_loss += loss.item()
 
         avg_test_loss = total_test_loss / len(test_loader)
+        test_loss_history.append(avg_test_loss)
 
         # ============ Log & Save ============
-        print(f'Epoch {epoch+1}/{args.num_epochs}: Train Loss = {avg_train_loss:.4f}, Test Loss = {avg_test_loss:.4f}')
+        print(f"Epoch {epoch + 1}/{args.num_epochs} | "
+                f"Train Loss: {avg_train_loss:.4f} | "
+                f"Test Loss: {avg_test_loss:.4f}")
+
+        print("-" * 60)
 
         # Save best model
         if avg_test_loss < best_loss:
             best_loss = avg_test_loss
             torch.save(net.state_dict(), os.path.join(args.save_dir, 'best_model.pth'))
 
-        print(f"\tPreds: {output[:3].detach().cpu().numpy()}")
-        print(f"\tTruth: {ratings[:3].detach().cpu().numpy()}")
-        print("-" * 30)
-
     # Save final model
     torch.save(net.state_dict(), os.path.join(args.save_dir, 'last_model.pth'))
-    print(f"Training Done! Best Loss: {best_loss:.4f}")
+    print(f"Training Done! Best Test Loss: {best_loss:.4f}")
+
+    # Save loss curve
+    plt.figure(figsize=(10, 5))
+    plt.plot(train_loss_history, label='Training Loss', color='blue')
+    plt.plot(test_loss_history, label='Validation Loss', color='orange')
+
+    plt.title(f'Loss Curve')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+
+    plot_path = os.path.join(args.save_dir, 'loss_curve.png')
+    plt.savefig(plot_path)
+    print(f"Loss curve saved to: {plot_path}")
 
 def main():
     args = parse_args()

@@ -1,3 +1,5 @@
+matplotlib
 numpy
 pandas
 torch>=2.0.0
+tqdm

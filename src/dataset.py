@@ -14,7 +14,7 @@ class MovieLensDataset(Dataset):
         print(f"Successfully loaded dataset: {abs_path}")
 
         names = ['user_id', 'item_id', 'rating', 'timestamp']
-        df = pd.read_csv(abs_path, sep='\t', header=None, names=names)
+        df = pd.read_csv(abs_path, sep='::', header=None, engine='python', names=names)
 
         # Adjust IDs for PyTorch Embedding (0-based)
         df['user_id'] -= 1

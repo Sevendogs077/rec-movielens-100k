@@ -1,31 +1,34 @@
-# rec-movielens-1M
+# rec-movielens
+
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
+
 ### Introduction
 
 A simple implementation of Recommender System based on the [MovieLens 1M Dataset](https://grouplens.org/datasets/movielens/1M/).
 
 ---
 
-### To-Do List
+### Model Zoo
 
-- [x] **MF**
-- [x] **GMF**
-- [ ] **NCF**
-- [ ] **DeepFM**
-- [ ] **DIN**
-- [ ] **SASRec**
-- [ ] **LightGCN**
-- [ ] **LLM4Rec** - *Coming Soon*
+![MF](https://img.shields.io/badge/MF-Done-success)
+![GMF](https://img.shields.io/badge/GMF-Done-success)
+![NCF](https://img.shields.io/badge/NCF-Buliding-yellow)
+![DeepFM](https://img.shields.io/badge/DeepFM-Planned-lightgrey)
+![DIN](https://img.shields.io/badge/DIN-Planned-lightgrey)
+![SASRec](https://img.shields.io/badge/SASRec-Planned-lightgrey)
+![LightGCN](https://img.shields.io/badge/LightGCN-Planned-lightgrey)
+![LLM4Rec](https://img.shields.io/badge/LLM4Rec-Planned-lightgrey)
+
 ---
 
 ### Requirements
 
-```text
-numpy
-pandas
-torch>=2.0.0
-```
+- `Python` >= 3.10
+- `PyTorch` >= 2.0.0 (CUDA recommended)
+- Other dependencies: `pandas`, `numpy`, `tqdm`, `matplotlib`
+
 ---
 
 ### Quick Start
@@ -44,7 +47,7 @@ python train.py --num_features 32 --num_epochs 50 --lr 0.005
 #### Experiment Management
 
 ```bash
-python train.py --model_type 'ncf' --seed 24 --save_dir ./saved_models/exp_ncf_24
+python train.py --model_type 'ncf' --seed 24 --save_dir ./log/exp_ncf_24
 ```
 
 ---
@@ -53,8 +56,8 @@ python train.py --model_type 'ncf' --seed 24 --save_dir ./saved_models/exp_ncf_2
 
 ```text
 .        
-├── data/                  # Data directory (contains u.data)
-├── saved_models/          # Model checkpoints
+├── data/                  # Data directory
+├── log/                   # Log and saved models
 ├── src/                   # Source code package
 │   ├── __init__.py        # Package initialization
 │   ├── dataset.py         # Dataset loading logic

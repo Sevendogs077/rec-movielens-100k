@@ -11,9 +11,11 @@ data/
 *.csv
 *.data
 
-saved_models/
+log/
 *.pth
 *.pt
+*.png
 
 .DS_Store
 Thumbs.db
+
