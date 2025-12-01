@@ -1,9 +1,9 @@
-# rec-movielens-100k
+# rec-movielens-1M
 
 ---
 ### Introduction
 
-A simple implementation of Recommender System based on the [MovieLens 100K Dataset](https://grouplens.org/datasets/movielens/100k/).
+A simple implementation of Recommender System based on the [MovieLens 1M Dataset](https://grouplens.org/datasets/movielens/1M/).
 
 ---
 
@@ -11,12 +11,12 @@ A simple implementation of Recommender System based on the [MovieLens 100K Datas
 
 - [x] **MF**
 - [x] **GMF**
-- [] **NCF**
-- [] **DeepFM**
-- [] **DIN**
-- [] **SASRec**
-- [] **LightGCN**
-- [] **LLM4Rec** - *Coming Soon*
+- [ ] **NCF**
+- [ ] **DeepFM**
+- [ ] **DIN**
+- [ ] **SASRec**
+- [ ] **LightGCN**
+- [ ] **LLM4Rec** - *Coming Soon*
 ---
 
 ### Requirements

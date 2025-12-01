@@ -32,7 +32,7 @@ class GeneralizedMF(nn.Module):
         # Initialize weights
         nn.init.normal_(self.user_embedding.weight, mean=0, std=0.01)
         nn.init.normal_(self.item_embedding.weight, mean=0, std=0.01)
-        nn.init.constant_(self.predict_layer.weight, 1.0) # simulate MF at the begining
+        nn.init.constant_(self.predict_layer.weight, 1.0) # simulate MF at the beginning
 
     def forward(self, user_ids, item_ids):
         user_embedding = self.user_embedding(user_ids)

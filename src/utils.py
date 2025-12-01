@@ -9,7 +9,7 @@ def parse_args():
     parser.add_argument('--num_features', type=int, default=64)
 
     # ============ model ============
-    parser.add_argument('--model_type', type=str, default='mf', choices=['mf', 'gmf', 'ncf'])
+    parser.add_argument('--model_type', type=str, default='gmf', choices=['mf', 'gmf', 'ncf'])
 
     # ============ train ============
     parser.add_argument('--batch_size', type=int, default=256)

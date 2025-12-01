@@ -6,7 +6,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 from src.dataset import MovieLensDataset
-from src.model import MatrixFactorization, GeneralizedMF, NeuralCF
+from src import model
 from src.utils import parse_args
 
 def set_seed(seed):
@@ -38,16 +38,19 @@ def train(args):
     test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False)
 
     # Initialize model
-    if args.model_type == 'mf':
-        model = MatrixFactorization(dataset.num_users, dataset.num_items, args.num_features)
-    elif args.model_type == 'gmf':
-        model = GeneralizedMF(dataset.num_users, dataset.num_items, args.num_features)
-    elif args.model_type == 'ncf':
-        model = NeuralCF(dataset.num_users, dataset.num_items, args.num_features)
-    else:
-        raise ValueError(f"Unknown model type: {args.model_type}")
+    model_mapping = {
+        'mf': model.MatrixFactorization,
+        'gmf': model.GeneralizedMF,
+        'ncf': model.NeuralCF,
+    }
+    if args.model_type not in model_mapping:
+        raise ValueError(f"Model '{args.model_type}' not found. Choices: {list(model_mapping.keys())}")
 
-    model = model.to(args.device)
+    model_class = model_mapping[args.model_type]
+
+    net = model_class(dataset.num_users, dataset.num_items, args.num_features)
+
+    net = net.to(args.device)
 
     # Define loss func & optimizer
     loss_choices = {
@@ -55,7 +58,7 @@ def train(args):
         'l1':  nn.L1Loss()
     }
     criterion = loss_choices[args.loss_type]
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
 
     # Initialize best_loss
     best_loss = float('inf')
@@ -64,7 +67,7 @@ def train(args):
     for epoch in range(args.num_epochs):
 
         # ============ Train ============
-        model.train()
+        net.train()
         total_train_loss = 0
 
         for user_ids, item_ids, ratings in train_loader:
@@ -75,7 +78,7 @@ def train(args):
             optimizer.zero_grad()
 
             # Forward
-            output = model(user_ids, item_ids)
+            output = net(user_ids, item_ids)
 
             # Compute loss
             loss = criterion(output, ratings)
@@ -89,7 +92,7 @@ def train(args):
         avg_train_loss = total_train_loss / len(train_loader)
 
         # ============ Eval ============
-        model.eval()
+        net.eval()
         total_test_loss = 0
 
         with torch.no_grad():
@@ -98,7 +101,7 @@ def train(args):
                 item_ids = item_ids.to(args.device)
                 ratings = ratings.to(args.device)
 
-                output = model(user_ids, item_ids)
+                output = net(user_ids, item_ids)
                 loss = criterion(output, ratings)
 
                 total_test_loss += loss.item()
@@ -111,14 +114,14 @@ def train(args):
         # Save best model
         if avg_test_loss < best_loss:
             best_loss = avg_test_loss
-            torch.save(model.state_dict(), os.path.join(args.save_dir, 'best_model.pth'))
+            torch.save(net.state_dict(), os.path.join(args.save_dir, 'best_model.pth'))
 
         print(f"\tPreds: {output[:3].detach().cpu().numpy()}")
         print(f"\tTruth: {ratings[:3].detach().cpu().numpy()}")
         print("-" * 30)
 
     # Save final model
-    torch.save(model.state_dict(), os.path.join(args.save_dir, 'last_model.pth'))
+    torch.save(net.state_dict(), os.path.join(args.save_dir, 'last_model.pth'))
     print(f"Training Done! Best Loss: {best_loss:.4f}")
 
 def main():
