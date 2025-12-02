@@ -8,9 +8,10 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
+
 from src.dataset import MovieLensDataset
 from src import model
-from src.utils import parse_args
+from src.utils import parse_args, save_args
 
 def set_seed(seed):
     random.seed(seed)
@@ -24,20 +25,23 @@ def set_seed(seed):
 def train(args):
     # Select device
     if args.device == 'cuda' and torch.cuda.is_available():
-        args.device = torch.device('cuda')
+        device = torch.device('cuda')
     else:
-        args.device = torch.device('cpu')
+        device = torch.device('cpu')
 
-    print(f"Using Device: {args.device}")
+    print(f"Using Device: {device}")
 
     # Setup save_dir
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
+    # Save args
+    save_args(args, args.save_dir)
+
     # Load dataset
     dataset = MovieLensDataset(args.data_path)
 
-    # Split dataset into train_set & test_set
+    # Split dataset
     data_size = len(dataset)
     train_size = int(args.train_ratio * data_size)
     test_size = data_size - train_size
@@ -58,17 +62,21 @@ def train(args):
         raise ValueError(f"Model '{args.model_type}' not found. Choices: {list(model_mapping.keys())}")
     model_class = model_mapping[args.model_type]
 
-    # Initialize net
+    # Initialize model architecture
     net = model_class(dataset.num_users, dataset.num_items, args.num_features)
-    net = net.to(args.device)
+    net = net.to(device)
 
-    # Define loss func & optimizer
+    # Define loss function
     loss_choices = {
         'mse': nn.MSELoss(),
         'l1':  nn.L1Loss()
     }
     criterion = loss_choices[args.loss_type]
-    optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
+
+    # Define optimizer
+    optimizer = torch.optim.Adam(net.parameters(),
+                                 lr=args.lr,
+                                 weight_decay=args.weight_decay)
 
     # Initialize best_loss
     best_loss = float('inf')
@@ -77,7 +85,8 @@ def train(args):
     train_loss_history = []
     test_loss_history = []
 
-    # Start training loop
+    # Start training
+    print(" Start Training ".center(60, "="))
     for epoch in range(args.num_epochs):
 
         # ============ Train ============
@@ -94,9 +103,9 @@ def train(args):
         )
 
         for user_ids, item_ids, ratings in train_pbar:
-            user_ids = user_ids.to(args.device)
-            item_ids = item_ids.to(args.device)
-            ratings = ratings.to(args.device)
+            user_ids = user_ids.to(device)
+            item_ids = item_ids.to(device)
+            ratings = ratings.to(device)
 
             # Zero gradient
             optimizer.zero_grad()
@@ -118,15 +127,15 @@ def train(args):
         avg_train_loss = total_train_loss / len(train_loader)
         train_loss_history.append(avg_train_loss)
 
-        # ============ Eval ============
+        # ============ Validation ============
         net.eval()
         total_test_loss = 0
 
         with torch.no_grad():
             for user_ids, item_ids, ratings in test_loader:
-                user_ids = user_ids.to(args.device)
-                item_ids = item_ids.to(args.device)
-                ratings = ratings.to(args.device)
+                user_ids = user_ids.to(device)
+                item_ids = item_ids.to(device)
+                ratings = ratings.to(device)
 
                 output = net(user_ids, item_ids)
                 loss = criterion(output, ratings)
@@ -151,9 +160,10 @@ def train(args):
     # Save final model
     torch.save(net.state_dict(), os.path.join(args.save_dir, 'last_model.pth'))
     print(f"Training Done! Best Test Loss: {best_loss:.4f}")
+    print("=" * 60)
 
     # Save loss curve
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(8, 6))
     plt.plot(train_loss_history, label='Training Loss', color='blue')
     plt.plot(test_loss_history, label='Validation Loss', color='orange')
 
@@ -165,7 +175,7 @@ def train(args):
 
     plot_path = os.path.join(args.save_dir, 'loss_curve.png')
     plt.savefig(plot_path)
-    print(f"Loss curve saved to: {plot_path}")
+    print(f"Loss curve saved to: {os.path.abspath(plot_path)}")
 
 def main():
     args = parse_args()

@@ -14,7 +14,7 @@ A simple implementation of Recommender System based on the [MovieLens 1M Dataset
 
 ![MF](https://img.shields.io/badge/MF-Done-success)
 ![GMF](https://img.shields.io/badge/GMF-Done-success)
-![NCF](https://img.shields.io/badge/NCF-Buliding-yellow)
+![NCF](https://img.shields.io/badge/NCF-Building-yellow)
 ![DeepFM](https://img.shields.io/badge/DeepFM-Planned-lightgrey)
 ![DIN](https://img.shields.io/badge/DIN-Planned-lightgrey)
 ![SASRec](https://img.shields.io/badge/SASRec-Planned-lightgrey)
@@ -33,21 +33,16 @@ A simple implementation of Recommender System based on the [MovieLens 1M Dataset
 
 ### Quick Start
 
-#### Basic Usage
+#### Training
 
 ```bash
 python train.py
 ```
-#### Hyperparameter Tuning
+
+#### Evaluation
 
 ```bash
-python train.py --num_features 32 --num_epochs 50 --lr 0.005
-```
-
-#### Experiment Management
-
-```bash
-python train.py --model_type 'ncf' --seed 24 --save_dir ./log/exp_ncf_24
+python evaluate.py
 ```
 
 ---
@@ -57,13 +52,14 @@ python train.py --model_type 'ncf' --seed 24 --save_dir ./log/exp_ncf_24
 ```text
 .        
 ├── data/                  # Data directory
-├── log/                   # Log and saved models
+├── output/                # saved models and figures
 ├── src/                   # Source code package
 │   ├── __init__.py        # Package initialization
 │   ├── dataset.py         # Dataset loading logic
 │   ├── model.py           # Model architecture definition
 │   └── utils.py           # Argument parsing & utility functions
 ├── .gitignore             # Git ignore rules
+├── evaluate.py            # Main evaluation script
 ├── README.md              # Project documentation
 ├── requirements.txt       # Python dependencies
 └── train.py               # Main training script
