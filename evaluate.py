@@ -64,7 +64,7 @@ def evaluate(input_args):
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Weights not found: {model_path}")
 
-    net.load_state_dict(torch.load(model_path, map_location=train_args.device))
+    net.load_state_dict(torch.load(model_path, map_location=device))
     print(f"Loaded weights from: {os.path.abspath(model_path)}")
 
     # Start inference
