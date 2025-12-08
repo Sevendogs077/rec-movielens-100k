@@ -57,21 +57,3 @@ python evaluate.py
 ```
 
 ---
-
-### Project Structure
-
-```text
-.        
-├── data/                  # Data directory
-├── output/                # saved models and figures
-├── src/                   # Source code package
-│   ├── __init__.py        # Package initialization
-│   ├── dataset.py         # Dataset loading logic
-│   ├── model.py           # Model architecture definition
-│   └── utils.py           # Argument parsing & utility functions
-├── .gitignore             # Git ignore rules
-├── evaluate.py            # Main evaluation script
-├── README.md              # Project documentation
-├── requirements.txt       # Python dependencies
-└── train.py               # Main training script
-```
