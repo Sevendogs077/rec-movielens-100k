@@ -8,7 +8,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='MovieLens Recommender System')
 
     # ============ data ============
-    parser.add_argument('--data_path', type=str, default='./data/ratings.dat')
+    parser.add_argument('--data_path', type=str, default='./data')
     parser.add_argument('--num_features', type=int, default=64)
 
     # ============ model ============

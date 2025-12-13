@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 import torch.optim.lr_scheduler as lr_scheduler
 
-from src.dataset import MovieLensDataset
+from src.datasets import get_dataset
 from src.models import all_models
 from src.utils import parse_args, save_args, get_logger
 
@@ -43,7 +43,7 @@ def train(args):
     save_args(args, args.save_dir, logger)
 
     # Load dataset
-    dataset = MovieLensDataset(args.data_path)
+    dataset = get_dataset(args)
 
     # Split dataset
     data_size = len(dataset)
