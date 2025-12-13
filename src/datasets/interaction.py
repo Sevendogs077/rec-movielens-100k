@@ -2,7 +2,7 @@ import torch
 from .base import BaseDataset
 
 class InteractionDataset(BaseDataset):
-    def __init__(self, data_path: str, **kwargs):
+    def __init__(self, data_path, **kwargs):
         super().__init__(data_path)
 
         self.user_ids = torch.tensor(self.df['user_id'].values, dtype=torch.long)

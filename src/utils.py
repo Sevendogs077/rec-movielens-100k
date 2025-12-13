@@ -12,7 +12,8 @@ def parse_args():
     parser.add_argument('--num_features', type=int, default=64)
 
     # ============ model ============
-    parser.add_argument('--model_type', type=str, default='ncf', choices=['mf', 'gmf', 'ncf'])
+    parser.add_argument('--model_type', type=str, default='fm',
+                        choices=['mf', 'gmf', 'ncf', 'fm', 'deepfm'])
 
     parser.add_argument('--mlp_layers', type=int, nargs='+', default=[64, 32, 16])
     parser.add_argument('--dropout', type=float, default=0.2)

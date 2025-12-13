@@ -11,9 +11,7 @@ class BaseDataset(Dataset):
     def __init__(self, data_path):
         super().__init__()
 
-        # -------------------------------------------------
-        # Initialization
-        # -------------------------------------------------
+        # ========== Initialization ==========
 
         # Verify data path
         abs_path = os.path.abspath(data_path)
@@ -46,9 +44,7 @@ class BaseDataset(Dataset):
             encoding='latin-1'
         )
 
-        # -------------------------------------------------
-        # Preprocessing
-        # -------------------------------------------------
+        # ========== Preprocessing ==========
 
         # Adjust IDs for PyTorch Embedding (0-based)
         ratings['user_id'] -= 1
@@ -64,7 +60,7 @@ class BaseDataset(Dataset):
         movies['release_year'] = movies['title'].apply(lambda x: re.search(r'\((\d{4})\)', x).group(1))
 
         # Get movie genres (FIRST genre only)
-        # Note: Multi-hot encoding can be implemented here for advanced models
+        # !!! CAUTION !!! Multi-hot encoding can be implemented here for advanced models
         movies['genres'] = movies['genres'].apply(lambda x: x.split('|')[0])
 
         # Merge all data (left join)
@@ -73,39 +69,47 @@ class BaseDataset(Dataset):
 
         # Convert time_stamp into datetime
         dt = pd.to_datetime(df['timestamp'], unit='s')
-        df['hour'] = dt.dt.hour
+        df['year'] = dt.year
+        df['month'] = dt.dt.month
+        df['day'] = dt.dt.day
         df['weekday'] = dt.dt.weekday
+        df['hour'] = dt.dt.hour
 
-        # Find user's last item
+        # Find user's last rated movie
         df = df.sort_values(by=['user_id', 'timestamp'])
         df['last_item_id'] = df.groupby('user_id')['movie_id'].shift(1)
         unknown_item_token = self.num_items # assign num_items to represent 'No previous item' (Cold Start)
         df['last_item_id'] = df['last_item_id'].fillna(unknown_item_token).astype(int)
 
-        # -------------------------------------------------
-        # Feature encoding
-        # -------------------------------------------------
+        # Store user's history rated movie
+        df = df.sort_values(by=['user_id', 'timestamp'])
+        df['history_len'] = df.groupby('user_id').cumcount() # total history length BEFORE current timestamp
+
+        self.user_history_dict = df.groupby('user_id')['movie_id'].apply(list).to_dict()
+        self.max_history_len = max([len(seq) for seq in self.user_history_dict.values()])
+        self.padding_token = self.num_items # assign num_items to represent 'No history item' (Cold Start)
+
+        # ========== Feature encoding ==========
 
         self.feature_dims = {}
         sparse_features = [
-            'gender', 'age', 'occupation', 'zipcode', 'genres',     # User/Item Side
-            'release_year',                                         # Content Side
-            'hour', 'weekday',                                      # Context Side
-            #'last_item_id',
-            # Excluded to maintain ID alignment with 'item_id' (Shared Embedding)
-            # Reason: LabelEncoder() would change last_item_id
+            'gender', 'age', 'occupation', 'zipcode', 'genres',
+            'release_year',
+            'year', 'month', 'day', 'weekday', 'hour',
+            #'last_item_id',    # Excluded to maintain ID alignment with 'item_id' (Shared Embedding)
+                                # Reason: LabelEncoder would change last_item_id
         ]
         for feat in sparse_features:
             lbe = LabelEncoder()
             df[feat] = lbe.fit_transform(df[feat])
             self.feature_dims[feat] = df[feat].nunique()
 
-        # Manually set dim. Indices: [0, N-1] for items, [N] for cold-start
-        self.feature_dims['last_item_id'] = self.num_items + 1
+        # Manually add other features
+        self.feature_dims['user_id'] = self.num_users
+        self.feature_dims['item_id'] = self.num_items + 1  # Indices: [0, N-1] for items, [N] for cold-start
+        self.feature_dims['last_item_id'] = self.num_items + 1 # Indices: [0, N-1] for items, [N] for cold-start
 
-        # -------------------------------------------------
-        # Finalization
-        # -------------------------------------------------
+        # ========== Finalization ==========
 
         # rename: movie_id -> item_id
         df.rename(columns={'movie_id': 'item_id'}, inplace=True)
