@@ -69,7 +69,7 @@ class BaseDataset(Dataset):
 
         # Convert time_stamp into datetime
         dt = pd.to_datetime(df['timestamp'], unit='s')
-        df['year'] = dt.year
+        df['year'] = dt.dt.year
         df['month'] = dt.dt.month
         df['day'] = dt.dt.day
         df['weekday'] = dt.dt.weekday

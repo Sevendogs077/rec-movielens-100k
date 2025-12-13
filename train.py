@@ -67,6 +67,7 @@ def train(args):
         'num_users': dataset.num_users,
         'num_items': dataset.num_items,
         'num_features': args.num_features,
+        'feature_dims': getattr(dataset, 'feature_dims', None),
         'mlp_layers': args.mlp_layers,
         'dropout': args.dropout
     }
@@ -120,19 +121,19 @@ def train(args):
             file = sys.stdout
         )
 
-        for user_ids, item_ids, ratings in train_pbar:
-            user_ids = user_ids.to(device)
-            item_ids = item_ids.to(device)
-            ratings = ratings.to(device)
+        for inputs, labels in train_pbar:
+
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+            labels = labels.to(device)
 
             # Zero gradient
             optimizer.zero_grad()
 
             # Forward
-            output = net(user_ids, item_ids)
+            output = net(inputs)
 
             # Compute loss
-            loss = criterion(output, ratings)
+            loss = criterion(output, labels)
 
             # Backward & Optimization
             loss.backward()
@@ -150,13 +151,12 @@ def train(args):
         total_test_loss = 0
 
         with torch.no_grad():
-            for user_ids, item_ids, ratings in test_loader:
-                user_ids = user_ids.to(device)
-                item_ids = item_ids.to(device)
-                ratings = ratings.to(device)
+            for inputs, labels in test_loader:
+                inputs = {k: v.to(device) for k, v in inputs.items()}
+                labels = labels.to(device)
 
-                output = net(user_ids, item_ids)
-                loss = criterion(output, ratings)
+                output = net(inputs)
+                loss = criterion(output, labels)
 
                 total_test_loss += loss.item()
 

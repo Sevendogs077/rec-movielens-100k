@@ -15,10 +15,14 @@ class MatrixFactorization(nn.Module):
         nn.init.normal_(self.user_embedding.weight, mean=0, std=0.01)
         nn.init.normal_(self.item_embedding.weight, mean=0, std=0.01)
 
-    def forward(self, user_ids, item_ids):
-        u_emb = self.user_embedding(user_ids)
-        i_emb = self.item_embedding(item_ids)
+    def forward(self, inputs):
+        user_ids = inputs['user_id']
+        item_ids = inputs['item_id']
 
+        u_emb = self.user_embedding(user_ids)  # shape: [batch_size, embed_dim]
+        i_emb = self.item_embedding(item_ids)  # shape: [batch_size, embed_dim]
+
+        # Dot Product
         element_product = u_emb * i_emb
-        output = torch.sum(element_product, dim=1)
+        output = torch.sum(element_product, dim=1)  # shape: [batch_size]
         return output

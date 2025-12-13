@@ -7,7 +7,12 @@ class InteractionDataset(BaseDataset):
 
         self.user_ids = torch.tensor(self.df['user_id'].values, dtype=torch.long)
         self.item_ids = torch.tensor(self.df['item_id'].values, dtype=torch.long)
-        self.ratings = torch.tensor(self.df['rating'].values, dtype=torch.float32)
+        self.labels = torch.tensor(self.df['rating'].values, dtype=torch.float32)
 
     def __getitem__(self, idx):
-        return self.user_ids[idx], self.item_ids[idx], self.ratings[idx]
+        x = {
+            'user_id': self.user_ids[idx],
+            'item_id': self.item_ids[idx]
+        }
+
+        return x, self.labels[idx]
