@@ -33,12 +33,12 @@ class GeneralizedMF(BaseModel):
 
     def forward(self, inputs):
         # Stack inputs
-        x = [inputs[name] for name in self.feature_names]
-        x = torch.stack(x, dim=1)
+        feature_ids = [inputs[name] for name in self.feature_names]
+        feature_ids = torch.stack(feature_ids, dim=1)
 
-        x = x + self.offsets
+        feature_ids = feature_ids + self.offsets
 
-        emb = self.embedding(x)
+        emb = self.embedding(feature_ids)
 
         user_emb = emb[:, 0, :]
         item_emb = emb[:, 1, :]
